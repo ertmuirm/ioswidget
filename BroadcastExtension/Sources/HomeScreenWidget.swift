@@ -7,11 +7,11 @@ struct HomeScreenWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HomeScreenProvider()) { entry in
             HomeScreenWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .background(Color.black)
         }
         .configurationDisplayName("Widget")
         .description("Customizable widget for Home Screen")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+        .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
 
