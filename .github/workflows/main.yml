@@ -28,37 +28,19 @@ jobs:
         run: |
           mkdir -p Payload/Widget.app
           
-          # Find Widget.app in DerivedData
           echo "Looking for Widget.app..."
-          find ~/Library/Developer/Xcode/DerivedData -name "Widget.app" -type d 2>/dev/null | while read app; do
-            echo "Found: $app"
-            # Check if this is the correct app (has our bundle id)
-            if [ -f "$app/Info.plist" ]; then
-              BUNDLE=$(plutil -p "$app/Info.plist" 2>/dev/null | grep CFBundleIdentifier | head -1)
-              echo "Bundle: $BUNDLE"
-              if [[ "$BUNDLE" == *"com.iosmirror"* ]]; then
-                echo "Copying correct app: $app"
-                cp -R "$app"/* Payload/Widget.app/
-                break
-              fi
-            fi
-          done
+          LATEST_APP=$(find ~/Library/Developer/Xcode/DerivedData -name "Widget.app" -type d 2>/dev/null | tail -1)
+          echo "Found: $LATEST_APP"
           
-          # Check what we have
-          ls -la Payload/
-          ls -la Payload/Widget.app/ 2>/dev/null || echo "Widget.app not found"
-          
-          # Create ZIP if we have content
-          if ls -la Payload/Widget.app/ | grep -q "^d"; then
-            cd Payload && zip -r9 ../Widget.ipa * && cd ..
-          else
-            # Fallback: include project
-            echo "Including project sources instead"
-            cp -r Widget BroadcastExtension project.yml Payload/
-            cd Payload && zip -r9 ../Widget.ipa * && cd ..
+          if [ -n "$LATEST_APP" ] && [ -d "$LATEST_APP" ]; then
+            cp -R "$LATEST_APP"/* Payload/Widget.app/
           fi
           
+          ls -la Payload/
+          
+          cd Payload && zip -r9 ../Widget.ipa * && cd ..
           ls -la *.ipa
+          du -sh *.ipa
           
       - uses: actions/upload-artifact@v4
         with:
