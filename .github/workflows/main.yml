@@ -59,3 +59,8 @@ jobs:
           fi
           
           ls -la *.ipa
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Widget-unsigned-ipa
+          path: Widget.ipa
