@@ -22,8 +22,8 @@ struct WidgetItem: Identifiable, Codable, Equatable {
         sfSymbolName: String = "star.fill",
         customText: String = "",
         fontSize: Int = 12,
-        foregroundColor: CodableColor = CodableColor(color: .white),
-        backgroundColor: CodableColor(color: .black),
+        foregroundColor: CodableColor = CodableColor(red: 1, green: 1, blue: 1, opacity: 1),
+        backgroundColor: CodableColor = CodableColor(red: 0, green: 0, blue: 0, opacity: 1),
         backgroundTransparency: Double = 0.0,
         actionType: ActionType = .urlScheme,
         actionPayload: String = ""
@@ -114,7 +114,7 @@ struct WidgetConfiguration: Identifiable, Codable, Equatable {
         homeScreenSize: HomeScreenSize = .small,
         itemCapacity: Int = 1,
         items: [WidgetItem] = [],
-        backgroundColor: CodableColor = CodableColor(color: .black),
+        backgroundColor: CodableColor = CodableColor(red: 0, green: 0, blue: 0, opacity: 1),
         backgroundTransparency: Double = 0.0
     ) {
         self.id = id
