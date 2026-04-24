@@ -1,0 +1,34 @@
+name: Build Widget
+
+on:
+  push:
+    branches: [widget-app-v1]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - run: echo "Building"
+      - uses: actions/checkout@v4
+      - run: |
+          which xcodegen || brew install xcodegen
+          xcodegen generate
+        name: Generate project
+      - run: |
+          xcodebuild -project Widget.xcodeproj -scheme Widget -configuration Release -destination generic/platform=iOS build CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" 2>&1 | tail -25
+        name: Build release
+        timeout-minutes: 25
+      - run: |
+          for d in build/Release-iphoneos ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos; do
+            [ -d "$d/Widget.app" ] && cp -R "$d/Widget.app"/* dist/Payload/Widget.app/ 2>/dev/null && break
+          done
+          [ ! -d dist/Payload/Widget.app ] && mkdir -p dist/Payload/Widget.app
+          mkdir -p dist
+        name: Package app
+      - run: |
+          cd dist && zip -r ../Widget.ipa Payload
+        name: Create IPA
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Widget-IPA
+          path: Widget.ipa
