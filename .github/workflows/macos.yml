@@ -1,0 +1,54 @@
+name: Test macOS Runner
+
+on:
+  push:
+    branches: [widget-app-v1]
+  workflow_dispatch:
+
+jobs:
+  test-macos:
+    name: Test macOS Runner Access
+    runs-on: macos-14
+    timeout-minutes: 10
+    
+    steps:
+      - name: Check runner
+        run: |
+          echo "Running on macOS!"
+          uname -a
+          whoami
+          sw_vers
+          xcodebuild -version || echo "Xcode may need to be selected"
+          
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Show project files
+        run: |
+          ls -la
+          find . -type f -name "*.swift" | wc -l
+          
+      - name: Install tools
+        run: |
+          which xcodegen && xcodegen --version || brew install xcodegen
+          
+      - name: Generate project
+        run: |
+          xcodegen generate
+          ls -la *.xcodeproj
+          
+      - name: Create source package as fallback
+        run: |
+          mkdir -p dist/Payload/Widget.app
+          cp -r Widget dist/Payload/Widget/
+          cp -r BroadcastExtension dist/Payload/Widget/
+          cp project.yml dist/Payload/Widget/
+          cd dist && zip -r ../Widget.ipa Payload && cd ..
+          ls -la *.ipa
+          
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Widget-IPA
+          path: Widget.ipa
+          retention-days: 30
