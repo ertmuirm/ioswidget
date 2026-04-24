@@ -4,7 +4,7 @@ import SwiftUI
 struct LockScreenWidget: Widget {
     let kind: String = "LockScreenWidget"
     
-    var body: some WidgetConfiguration {
+    var body: WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: LockScreenProvider()) { entry in
             LockScreenWidgetEntryView(entry: entry)
         }
