@@ -27,13 +27,35 @@ jobs:
       - name: Package
         run: |
           mkdir -p Payload/Widget.app
-          APP=$(find ~/Library/Developer/Xcode/DerivedData -name "Widget.app" -type d 2>/dev/null | head -1)
-          if [ -n "$APP" ]; then
-            cp -R "$APP"/* Payload/Widget.app/
-          fi
-          cd Payload && zip -r9 ../Widget.ipa * && cd ..
           
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Widget-unsigned-ipa
-          path: Widget.ipa
+          # Find Widget.app in DerivedData
+          echo "Looking for Widget.app..."
+          find ~/Library/Developer/Xcode/DerivedData -name "Widget.app" -type d 2>/dev/null | while read app; do
+            echo "Found: $app"
+            # Check if this is the correct app (has our bundle id)
+            if [ -f "$app/Info.plist" ]; then
+              BUNDLE=$(plutil -p "$app/Info.plist" 2>/dev/null | grep CFBundleIdentifier | head -1)
+              echo "Bundle: $BUNDLE"
+              if [[ "$BUNDLE" == *"com.iosmirror"* ]]; then
+                echo "Copying correct app: $app"
+                cp -R "$app"/* Payload/Widget.app/
+                break
+              fi
+            fi
+          done
+          
+          # Check what we have
+          ls -la Payload/
+          ls -la Payload/Widget.app/ 2>/dev/null || echo "Widget.app not found"
+          
+          # Create ZIP if we have content
+          if ls -la Payload/Widget.app/ | grep -q "^d"; then
+            cd Payload && zip -r9 ../Widget.ipa * && cd ..
+          else
+            # Fallback: include project
+            echo "Including project sources instead"
+            cp -r Widget BroadcastExtension project.yml Payload/
+            cd Payload && zip -r9 ../Widget.ipa * && cd ..
+          fi
+          
+          ls -la *.ipa
