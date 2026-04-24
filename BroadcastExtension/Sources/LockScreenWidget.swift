@@ -7,11 +7,11 @@ struct LockScreenWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: LockScreenProvider()) { entry in
             LockScreenWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .background(Color.black)
         }
         .configurationDisplayName("Lock Screen Widget")
         .description("Customizable widget for Lock Screen")
-        .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular, .systemMedium])
+        .supportedFamilies([.accessoryInline, .accessoryCircular])
     }
 }
 
