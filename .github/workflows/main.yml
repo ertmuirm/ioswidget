@@ -21,30 +21,26 @@ jobs:
           
       - name: Build
         run: |
-          xcodebuild -project Widget.xcodeproj -scheme Widget -configuration Release -destination generic/platform=iOS -derivedDataPath build build CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" 2>&1 | tail -30
+          xcodebuild -project Widget.xcodeproj -scheme Widget -configuration Release -destination generic/platform=iOS -derivedDataPath ./DerivedData build CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" 2>&1
         timeout-minutes: 20
           
       - name: Package
         run: |
-          mkdir -p Payload/Widget.app
+          mkdir -p Payload
           
-          echo "Looking for Widget.app in build folder..."
-          if [ -d "build/Build/Products/Release-iphoneos/Widget.app" ]; then
-            echo "Found in build folder"
-            cp -R build/Build/Products/Release-iphoneos/Widget.app/* Payload/Widget.app/
-          elif [ -d "build/Build/Products/Release-iphoneos/BroadcastExtension.appex" ]; then
-            echo "Found BroadcastExtension"
-          else
-            echo "Searching for apps..."
-            find build -name "*.app" -type d
+          echo "Checking build output..."
+          ls -la DerivedData/
+          find DerivedData -type d -name "*.app" 2>/dev/null
+          
+          if [ -d "DerivedData/Build/Products/Release-iphoneos/Widget.app" ]; then
+            echo "Found Widget.app"
+            cp -R DerivedData/Build/Products/Release-iphoneos/Widget.app Payload/
           fi
           
           ls -la Payload/
-          du -sh Payload/
           
           cd Payload && zip -r9 ../Widget.ipa * && cd ..
           ls -la *.ipa
-          du -sh *.ipa
           
       - uses: actions/upload-artifact@v4
         with:
