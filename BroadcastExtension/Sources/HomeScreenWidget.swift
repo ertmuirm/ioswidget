@@ -4,7 +4,7 @@ import SwiftUI
 struct HomeScreenWidget: Widget {
     let kind: String = "HomeWidget"
     
-    var body: some WidgetConfiguration {
+    var body: WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HomeScreenProvider()) { entry in
             HomeScreenWidgetEntryView(entry: entry)
         }
@@ -41,7 +41,7 @@ struct HomeScreenWidgetEntryView: View {
     var body: some View {
         ZStack {
             Color.black
-            
+
             if entry.items.isEmpty {
                 VStack {
                     Image(systemName: "star.fill")
@@ -54,7 +54,7 @@ struct HomeScreenWidgetEntryView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.gray.opacity(0.3))
-                    
+
                     if item.displayType == .icon {
                         Image(systemName: item.sfSymbolName)
                             .font(.title)
