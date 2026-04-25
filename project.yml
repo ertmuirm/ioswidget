@@ -22,6 +22,8 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "16.0"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
+    dependencies:
+      - target: BroadcastExtension
 
   BroadcastExtension:
     type: app-extension
