@@ -25,7 +25,6 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # Paths to build products
           WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
           APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
           EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
@@ -36,15 +35,27 @@ jobs:
             exit 1
           fi
           
-          # Copy app and embed extension
-          rm -rf ./temp ./Payload
-          mkdir -p ./temp/Widget.app/PlugIns ./Payload
-          cp -a "$APP/"* ./temp/Widget.app/
-          cp -a "$EXT/"* ./temp/Widget.app/PlugIns/
-          cp -a ./temp/Widget.app Payload/
+          # Clean and create fresh directories
+          rm -rf ./Payload ./temp
+          mkdir -p ./Payload/Widget.app/PlugIns ./temp
           
+          # Copy app bundle (entire directory, preserving structure)
+          cp -a "$APP" ./Payload/Widget.app
+          
+          # Embed extension in PlugIns
+          cp -a "$EXT" ./Payload/Widget.app/PlugIns/
+          
+          # Verify structure
+          echo "=== IPA Structure ==="
+          ls -la Payload/
+          ls -la Payload/Widget.app/
+          ls -la Payload/Widget.app/PlugIns/
+          
+          # Make executable
           chmod +x Payload/Widget.app/Widget
-          zip -r Widget.ipa Payload
+          
+          # Create IPA (zip from Payload directory contents)
+          cd Payload && zip -r ../Widget.ipa . && cd ..
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
