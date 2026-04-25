@@ -48,14 +48,20 @@ jobs:
       - name: Package as IPA
         run: |
           APP_PATH="./DerivedData/Build/Products/Release-iphoneos/Widget.app"
+          
+          # Create proper IPA structure: Payload/Widget.app/
+          rm -rf Payload
           mkdir -p Payload/Widget.app
           cp -R "$APP_PATH/"* "Payload/Widget.app/"
           chmod +x Payload/Widget.app/Widget
-          cd Payload && zip -r ../Widget.ipa .
+          
+          # Create IPA
+          cd Payload
+          zip -r ../Widget.ipa .
           cd ..
-          ls -la
-          ls -la Payload/
-          ls -la Payload/Widget.app/
+          
+          # Verify
+          unzip -l Widget.ipa | head -20
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
