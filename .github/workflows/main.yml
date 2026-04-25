@@ -20,23 +20,20 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild build \
-            -scheme Widget \
-            -configuration Release \
-            -destination generic/platform=iOS \
-            -derivedDataPath ./DerivedData \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM="" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES
+          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
       - name: Embed Extension Manually
         run: |
-          EXTENSION_PATH="./DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
-          APP_PATH="./DerivedData/Build/Products/Release-iphoneos/Widget.app"
+          # Find the built app in DerivedData from archive
+          APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | head -1)
+          EXTENSION_PATH=$(find ./DerivedData -name "BroadcastExtension.appex" -type d | head -1)
           
-          # Create PlugIns folder if needed
+          if [ -z "$APP_PATH" ] || [ -z "$EXTENSION_PATH" ]; then
+            echo "Error: Could not find Widget.app or BroadcastExtension.appex"
+            exit 1
+          fi
+          
+          # Create PlugIns folder
           mkdir -p "$APP_PATH/PlugIns"
           
           # Copy extension
@@ -47,21 +44,23 @@ jobs:
 
       - name: Package as IPA
         run: |
-          APP_PATH="./DerivedData/Build/Products/Release-iphoneos/Widget.app"
+          # Find the app bundle
+          APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | head -1)
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Could not find Widget.app"
+            exit 1
+          fi
           
           # Clean up old files
           rm -rf Payload Widget.ipa
           
-          # Create IPA structure
+          # Create proper IPA structure
           mkdir -p Payload/Widget.app
-          
-          # Copy app bundle
           cp -a "$APP_PATH/." Payload/Widget.app/
-          
-          # Fix permissions
           chmod +x Payload/Widget.app/Widget
           
-          # Create IPA - zip from parent dir to include Payload prefix
+          # Create IPA - zip from parent to include Payload prefix
           zip -y -r Widget.ipa Payload
           
           # Verify contents
