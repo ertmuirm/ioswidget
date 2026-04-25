@@ -40,9 +40,9 @@ jobs:
           rm -rf Payload
           mkdir -p Payload/Widget.app/PlugIns
           
-          # Copy with verbose
-          cp -v "$APP" Payload/Widget.app
-          cp -v "$EXT" Payload/Widget.app/PlugIns
+          # Copy directories with -a flag (preserves permissions, copies recursively)
+          cp -a "$APP/." Payload/Widget.app/
+          cp -a "$EXT/." Payload/Widget.app/PlugIns/
           
           # Verify
           echo "Contents:"
