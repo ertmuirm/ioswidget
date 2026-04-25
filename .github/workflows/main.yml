@@ -29,26 +29,11 @@ jobs:
           APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
           EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
           
-          echo "APP: $APP"
-          echo "EXT: $EXT"
-          
-          if [ ! -d "$APP" ] || [ ! -d "$EXT" ]; then
-            echo "Error: Missing files"
-            exit 1
-          fi
-          
           rm -rf Payload
           mkdir -p Payload/Widget.app/PlugIns
           
-          # Copy directories with -a flag (preserves permissions, copies recursively)
           cp -a "$APP/." Payload/Widget.app/
           cp -a "$EXT/." Payload/Widget.app/PlugIns/
-          
-          # Verify
-          echo "Contents:"
-          ls Payload/
-          ls Payload/Widget.app/
-          ls Payload/Widget.app/PlugIns/
           
           chmod +x Payload/Widget.app/Widget
           cd Payload && zip -r ../Widget.ipa . && cd ..
