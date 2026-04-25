@@ -20,11 +20,11 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild archive \
+          xcodebuild build \
             -scheme Widget \
             -configuration Release \
-            -archivePath ./build/Widget.xcarchive \
             -destination generic/platform=iOS \
+            -derivedDataPath ./DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
