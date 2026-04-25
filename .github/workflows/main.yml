@@ -22,26 +22,25 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Debug - Find all apps
-        run: |
-          find . -name "*.app" -type d 2>/dev/null
-          find /Users/runner/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null
-
       - name: Package as IPA
         run: |
-          # Look in global DerivedData since local archive may not have extension
-          WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
-          APP_SRC=$(find "$WORK_DIR" -name "Widget.app" -path "*/Applications/*" -type d 2>/dev/null | head -1)
-          if [ -z "$APP_SRC" ]; then
-            # Try DerivedData
-            APP_SRC=$(find ~/Library/Developer/Xcode/DerivedData -name "Widget.app" -path "*/Applications/*" -type d 2>/dev/null | head -1)
+          # Find DerivedData folder by pattern
+          DD_BASE=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Widget-*" -maxdepth 1 | head -1)
+          if [ -z "$DD_BASE" ]; then
+            echo "Error: DerivedData folder not found"
+            exit 1
           fi
+          echo "Using DerivedData: $DD_BASE"
           
-          EXT=$(find ~/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
-          if [ -z "$EXT" ] || [ -z "$APP_SRC" ]; then
-            echo "APP: $APP_SRC EXT: $EXT"
-            echo "Error: Widget.app or BroadcastExtension.appex not found"
-            ls -la ~/Library/Developer/Xcode/DerivedData/ 2>/dev/null || echo "No DerivedData"
+          # Find app and extension in the correct build locations
+          APP_SRC="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app"
+          EXT="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/IntermediateBuildFilesPath/UninstalledProducts/iphoneos/BroadcastExtension.appex"
+          
+          if [ ! -d "$APP_SRC" ] || [ ! -d "$EXT" ]; then
+            echo "APP: $APP_SRC exists: $([ -d "$APP_SRC" ] && echo yes || echo no)"
+            echo "EXT: $EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
+            echo "Error: App or Extension not found"
+            ls -la "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/" 2>/dev/null || echo "No Widget folder"
             exit 1
           fi
           
