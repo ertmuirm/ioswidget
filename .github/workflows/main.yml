@@ -22,32 +22,27 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
+      - name: Debug archive
+        run: |
+          ls -la ./build/
+          ls -la ./build/Widget.xarchive.xcarchive/
+          ls -la ./build/Widget.xarchive.xcarchive/Products/
+          ls -la ./build/Widget.xarchive.xcarchive/Products/Applications/
+
       - name: Package as IPA
         run: |
-          # App in local archive
-          APP_SRC="./build/Widget.xarchive.xcarchive/Products/Applications/Widget.app"
+          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -maxdepth 1 -type d -name "*Widget*" | head -1)
           
-          EXT=""
-          # First check if extension is in the archive products folder next to app
-          for e in "./build/Widget.xarchive.xcarchive/Products/Applications/BroadcastExtension.appex" "./build/Widget.xarchive.xcarchive/Products/BroadcastExtension.appex"; do
-            if [ -e "$e" ]; then
-              EXT="$e"
-              echo "Found ext locally: $e"
-              break
-            fi
-          done
+          # Use absolute path to app in local archive
+          APP_SRC="/Users/runner/work/ioswidget/ioswidget/build/Widget.xarchive.xcarchive/Products/Applications/Widget.app"
           
-          # If not found, search in global DerivedData
-          if [ -z "$EXT" ]; then
-            EXT=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
-            echo "Found ext in DerivedData: $EXT"
-          fi
+          # Find extension in DerivedData
+          EXT=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
           
-          if [ ! -e "$APP_SRC" ] || [ -z "$EXT" ] || [ ! -d "$EXT" ]; then
-            echo "APP: $APP_SRC exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
-            echo "EXT: $EXT found: $([ -n "$EXT" ] && echo yes || echo no)"
-            echo "Error: App or Extension not found"
-            ls ./build/Widget.xarchive.xcarchive/Products/Applications/
+          if [ ! -d "$APP_SRC" ] || [ -z "$EXT" ]; then
+            echo "Error - APP: $APP_SRC exists: $([ -d "$APP_SRC" ] && echo yes || echo no)"
+            echo "Error - EXT: $EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
+            ls -la ./build/Widget.xarchive.xcarchive/Products/Applications/
             exit 1
           fi
           
