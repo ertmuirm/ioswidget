@@ -2,6 +2,7 @@ name: Build Widget App
 
 on:
   workflow_dispatch:
+      branches: [widget-app-v1]
 
 jobs:
   build:
