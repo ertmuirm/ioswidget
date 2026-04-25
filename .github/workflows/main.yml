@@ -22,11 +22,17 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Export from DerivedData
+      - name: Find and Export app
         run: |
-          ARCHIVE_PATH="./DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app"
+          # Find the app in DerivedData and copy to archive location
+          APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | grep -v dSYM | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Widget.app not found"
+            exit 1
+          fi
+          echo "Found app at: $APP_PATH"
           mkdir -p ./build/Widget.xarchive/Products/Applications
-          cp -r "$ARCHIVE_PATH" ./build/Widget.xarchive/Products/Applications/
+          cp -r "$APP_PATH" ./build/Widget.xarchive/Products/Applications/
 
       - name: Package as IPA
         run: |
