@@ -19,14 +19,9 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
-        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "16.0"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
-    entitlements:
-      path: Widget/Resources/Widget.entitlements
-      properties:
-        com.apple.security.application-groups:
-          - group.com.iosmirror
     dependencies:
       - target: BroadcastExtension
         embed: true
@@ -46,12 +41,9 @@ targets:
         SWIFT_VERSION: "5.9"
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_IDENTITY: ""
-        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
-    entitlements:
-      path: BroadcastExtension/Sources/BroadcastExtension.entitlements
-      properties:
-        com.apple.security.application-groups:
-          - group.com.iosmirror
+        IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    dependencies:
+      - sdk: WidgetKit.framework
 
 schemes:
   Widget:

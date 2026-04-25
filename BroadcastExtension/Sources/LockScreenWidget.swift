@@ -3,54 +3,49 @@ import SwiftUI
 
 struct LockScreenWidget: Widget {
     let kind: String = "LockScreenWidget"
-
+    
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: LockScreenProvider()) { entry in
-            LockScreenWidgetEntryView(entry: entry)
+        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+            if #available(iOS 17.0, *) {
+                WidgetEntryView(entry: entry)
+                    .containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                WidgetEntryView(entry: entry)
+            }
         }
         .configurationDisplayName("Lock Screen")
         .description("Lock Screen Widget")
     }
-}
-
-struct LockScreenProvider: TimelineProvider {
-    func placeholder(in context: Context) -> LockScreenEntry {
-        LockScreenEntry(date: Date(), items: [])
-    }
-
-    func getSnapshot(in context: Context, completion: @escaping (LockScreenEntry) -> Void) {
-        completion(LockScreenEntry(date: Date(), items: []))
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<LockScreenEntry>) -> Void) {
-        let entry = LockScreenEntry(date: Date(), items: [])
-        let timeline = Timeline(entries: [entry], policy: .atEnd)
-        completion(timeline)
-    }
-}
-
-struct LockScreenEntry: TimelineEntry {
-    let date: Date
-    let items: [WidgetItem]
-}
-
-struct LockScreenWidgetEntryView: View {
-    var entry: LockScreenEntry
     
-    var body: some View {
-        ZStack {
-            Color.black
-            if entry.items.isEmpty {
+    struct Provider: TimelineProvider {
+        func placeholder(in context: Context) -> Entry {
+            Entry(date: Date())
+        }
+        
+        func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
+            let entry = Entry(date: Date())
+            completion(entry)
+        }
+        
+        func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
+            let entry = Entry(date: Date())
+            let timeline = Timeline(entries: [entry], policy: .never)
+            completion(timeline)
+        }
+    }
+    
+    struct Entry: TimelineEntry {
+        let date: Date
+    }
+    
+    struct WidgetEntryView: View {
+        let entry: Entry
+        
+        var body: some View {
+            ZStack {
+                Color.black
                 Image(systemName: "star.fill")
                     .font(.title2)
-            } else if let item = entry.items.first {
-                if item.displayType == .icon {
-                    Image(systemName: item.sfSymbolName)
-                        .font(.title3)
-                } else {
-                    Text(item.customText)
-                        .font(.caption2)
-                }
             }
         }
     }
