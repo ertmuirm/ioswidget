@@ -30,27 +30,22 @@ jobs:
             echo "Error: DerivedData folder not found"
             exit 1
           fi
-          echo "Using DerivedData: $DD_BASE"
           
-          # Find app and extension in the correct build locations
-          APP_SRC="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app"
+          # Use BuildProductsPath for app (symlink to InstallationBuildProductsLocation)
+          APP_SRC="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/Widget.app"
+          # Extension is in IntermediateBuildFilesPath
           EXT="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/IntermediateBuildFilesPath/UninstalledProducts/iphoneos/BroadcastExtension.appex"
           
-          if [ ! -d "$APP_SRC" ] || [ ! -d "$EXT" ]; then
-            echo "APP: $APP_SRC exists: $([ -d "$APP_SRC" ] && echo yes || echo no)"
-            echo "EXT: $EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
-            # Try listing possible locations
-            echo "Checking BuildProductsPath/Release-iphoneos:"
-            ls "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/" 2>/dev/null || echo "No Release-iphoneos"
-            echo "Checking InstallationBuildProductsLocation:"
-            ls "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/" 2>/dev/null || echo "No Applications"
+          if [ ! -e "$APP_SRC" ] || [ ! -d "$EXT" ]; then
+            echo "APP exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
+            echo "EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
             echo "Error: App or Extension not found"
             exit 1
           fi
           
-          # Copy app to temp location for modification
+          # Copy app (dereference symlink)
           rm -rf ./temp
-          cp -r "$APP_SRC" ./temp/Widget.app
+          cp -rL "$APP_SRC" ./temp/Widget.app
           
           # Embed extension
           mkdir -p ./temp/Widget.app/PlugIns
