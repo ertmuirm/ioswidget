@@ -28,7 +28,22 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM=""
+            DEVELOPMENT_TEAM="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Embed Extension Manually
+        run: |
+          EXTENSION_PATH="./DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
+          APP_PATH="./DerivedData/Build/Products/Release-iphoneos/Widget.app"
+          
+          # Create PlugIns folder if needed
+          mkdir -p "$APP_PATH/PlugIns"
+          
+          # Copy extension
+          cp -R "$EXTENSION_PATH" "$APP_PATH/PlugIns/"
+          
+          # Verify
+          ls -la "$APP_PATH/PlugIns/"
 
       - name: Package as IPA
         run: |
