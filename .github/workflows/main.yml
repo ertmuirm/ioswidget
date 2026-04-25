@@ -24,29 +24,19 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # Find ALL DerivedData folders matching pattern
-          echo "=== All DerivedData folders ==="
-          find /Users/runner/Library/Developer/Xcode/DerivedData -type d -name "Widget*" -maxdepth 1
-          echo "=== Looking for build products ==="
+          # List all folders in DerivedData
+          echo "=== DerivedData contents ==="
           ls /Users/runner/Library/Developer/Xcode/DerivedData/
           
-          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -type d -name "Widget*" -maxdepth 1 | head -1)
-          if [ -z "$DD_BASE" ]; then
-            echo "Error: DerivedData folder not found"
-            exit 1
-          fi
-          echo "Using: $DD_BASE"
+          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -maxdepth 1 -type d -name "*Widget*" | head -1)
+          echo "Found DD_BASE: $DD_BASE"
           
           APP_SRC="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/Widget.app"
           EXT="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/IntermediateBuildFilesPath/UninstalledProducts/iphoneos/BroadcastExtension.appex"
           
-          echo "APP: $APP_SRC"
-          echo "EXT: $EXT"
-          echo "APP exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
-          echo "EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
-          
           if [ ! -e "$APP_SRC" ] || [ ! -d "$EXT" ]; then
-            echo "Error: App or Extension not found"
+            echo "APP exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
+            echo "EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
             exit 1
           fi
           
