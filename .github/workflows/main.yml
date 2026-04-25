@@ -69,11 +69,11 @@ jobs:
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>none</string>
+              <string>ad-hoc</string>
               <key>signingStyle</key>
               <string>manual</string>
               <key>signingCertificate</key>
-              <string></string>
+              <string>Apple Development</string>
           </dict>
           </plist>
           EOF
