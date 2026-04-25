@@ -45,48 +45,31 @@ jobs:
           # Verify
           ls -la "$APP_PATH/PlugIns/"
 
-      - name: Create xcarchive
+      - name: Package as IPA
         run: |
           APP_PATH="./DerivedData/Build/Products/Release-iphoneos/Widget.app"
           
-          # Create archive structure
-          rm -rf Widget.xcarchive
-          mkdir -p Widget.xcarchive/Products/Applications/Widget.app
-          cp -R "$APP_PATH"/* "Widget.xcarchive/Products/Applications/Widget.app/"
+          # Clean up old files
+          rm -rf Payload Widget.ipa
           
-          # Add Info.plist to archive
-          cp Widget/Resources/Info.plist "Widget.xcarchive/Info.plist"
+          # Create IPA structure
+          mkdir -p Payload/Widget.app
           
-          # Verify
-          ls -la Widget.xcarchive/Products/Applications/Widget.app/
-          ls -la Widget.xcarchive/
-
-      - name: Create ExportOptions.plist
-        run: |
-          cat > ExportOptions.plist << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>signingStyle</key>
-              <string>manual</string>
-          </dict>
-          </plist>
-          EOF
-          cat ExportOptions.plist
-
-      - name: Export IPA
-        run: |
-          xcodebuild -exportArchive \
-            -archivePath Widget.xcarchive \
-            -exportPath . \
-            -exportOptionsPlist ExportOptions.plist \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Verify IPA
-        run: |
-          ls -la
-          unzip -l Widget.ipa | head -20
+          # Copy app bundle
+          cp -a "$APP_PATH/." Payload/Widget.app/
+          
+          # Fix permissions
+          chmod +x Payload/Widget.app/Widget
+          
+          # Create IPA via zip
+          cd Payload
+          zip -y -r ../Widget.ipa .
+          cd ..
+          
+          # Verify contents
+          unzip -l Widget.ipa | head -15
+          echo "---"
+          unzip -l Widget.ipa | grep -E "\.app|Payload"
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
