@@ -33,7 +33,7 @@ jobs:
       - name: Package as IPA
         run: |
           mkdir -p Payload
-          cp -r ./build/Widget.xcarchive/Products/Applications/Widget.app Payload/
+          cp -r ./DerivedData/Build/Products/Release-iphoneos/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
