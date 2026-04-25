@@ -22,9 +22,11 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "16.0"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_IDENTITY: "-"
     dependencies:
       - target: BroadcastExtension
         embed: true
+        codeSign: false
 
   BroadcastExtension:
     type: app-extension
@@ -37,6 +39,9 @@ targets:
         INFOPLIST_FILE: BroadcastExtension/Sources/Info.plist
         SKIP_INSTALL: YES
         SWIFT_VERSION: "5.9"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_IDENTITY: "-"
     dependencies:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
