@@ -29,37 +29,28 @@ jobs:
           APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
           EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
           
-          echo "APP path: $APP"
-          echo "EXT path: $EXT"
-          ls -la "$APP" 2>/dev/null || echo "APP not found"
-          ls -la "$EXT" 2>/dev/null || echo "EXT not found"
+          echo "APP: $APP"
+          echo "EXT: $EXT"
           
-          # Verify files exist
           if [ ! -d "$APP" ] || [ ! -d "$EXT" ]; then
-            echo "Error: Widget.app or BroadcastExtension.appex not found"
+            echo "Error: Missing files"
             exit 1
           fi
           
-          # Clean and create fresh directories
-          rm -rf Payload temp
+          rm -rf Payload
           mkdir -p Payload/Widget.app/PlugIns
           
-          # Copy app bundle
-          echo "Copying Widget.app..."
-          cp -v -a "$APP" Payload/Widget.app
+          # Copy with verbose
+          cp -v "$APP" Payload/Widget.app
+          cp -v "$EXT" Payload/Widget.app/PlugIns
           
-          # Embed extension
-          echo "Copying BroadcastExtension.appex..."
-          cp -v -a "$EXT" Payload/Widget.app/PlugIns/
+          # Verify
+          echo "Contents:"
+          ls Payload/
+          ls Payload/Widget.app/
+          ls Payload/Widget.app/PlugIns/
           
-          # Verify structure
-          echo "=== IPA Structure ==="
-          ls -laR Payload/
-          
-          # Make executable
           chmod +x Payload/Widget.app/Widget
-          
-          # Create IPA
           cd Payload && zip -r ../Widget.ipa . && cd ..
 
       - name: Upload unsigned IPA
