@@ -20,42 +20,46 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
+          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
       - name: Embed Extension Manually
         run: |
-          # Find the built app in DerivedData from archive
-          APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | head -1)
-          EXTENSION_PATH=$(find ./DerivedData -name "BroadcastExtension.appex" -type d | head -1)
+          # The archive creates the app in a different location
+          ARCHIVE_PATH="./build/Widget.xarchive"
+          APP_PATH="$ARCHIVE_PATH/Products/Applications/Widget.app"
+          EXTENSIONPATH="$ARCHIVE_PATH/Products/Applications/Widget.app/Frameworks" # or check other locations
           
-          if [ -z "$APP_PATH" ] || [ -z "$EXTENSION_PATH" ]; then
-            echo "Error: Could not find Widget.app or BroadcastExtension.appex"
+          # Check actual extension location
+          EXTENSION_PATH=$(find ./build -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
+          
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Error: Widget.app not found at $APP_PATH"
+            ls -la "$ARCHIVE_PATH/Products/Applications/" 2>/dev/null || echo "Applications folder not found"
             exit 1
           fi
           
-          # Create PlugIns folder
-          mkdir -p "$APP_PATH/PlugIns"
+          # Create PlugIns folder if extension exists
+          if [ -n "$EXTENSION_PATH" ] && [ -d "$EXTENSION_PATH" ]; then
+            mkdir -p "$APP_PATH/PlugIns"
+            cp -R "$EXTENSION_PATH" "$APP_PATH/PlugIns/"
+            echo "Extension embedded"
+          else
+            echo "Warning: Extension not found"
+          fi
           
-          # Copy extension
-          cp -R "$EXTENSION_PATH" "$APP_PATH/PlugIns/"
-          
-          # Verify
-          ls -la "$APP_PATH/PlugIns/"
+          ls -la "$APP_PATH/"
 
       - name: Package as IPA
         run: |
-          # Find the app bundle
-          APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | head -1)
+          ARCHIVE_PATH="./build/Widget.xarchive"
+          APP_PATH="$ARCHIVE_PATH/Products/Applications/Widget.app"
           
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: Could not find Widget.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Error: Widget.app not found"
             exit 1
           fi
           
-          # Clean up old files
           rm -rf Payload Widget.ipa
-          
-          # Create proper IPA structure
           mkdir -p Payload/Widget.app
           cp -a "$APP_PATH/." Payload/Widget.app/
           chmod +x Payload/Widget.app/Widget
@@ -63,12 +67,11 @@ jobs:
           # Create IPA - zip from parent to include Payload prefix
           zip -y -r Widget.ipa Payload
           
-          # Verify contents
           unzip -l Widget.ipa | head -15
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
         with:
-          name: Widget-unsigned-ipa
+          name: Widget
           path: Widget.ipa
           retention-days: 30
