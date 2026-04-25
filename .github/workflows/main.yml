@@ -24,34 +24,36 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # Use absolute path
-          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -type d -name "Widget-*" -maxdepth 1 | head -1)
+          # Find ALL DerivedData folders matching pattern
+          echo "=== All DerivedData folders ==="
+          find /Users/runner/Library/Developer/Xcode/DerivedData -type d -name "Widget*" -maxdepth 1
+          echo "=== Looking for build products ==="
+          ls /Users/runner/Library/Developer/Xcode/DerivedData/
+          
+          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -type d -name "Widget*" -maxdepth 1 | head -1)
           if [ -z "$DD_BASE" ]; then
             echo "Error: DerivedData folder not found"
             exit 1
           fi
+          echo "Using: $DD_BASE"
           
-          # Use BuildProductsPath for app (symlink to InstallationBuildProductsLocation)
           APP_SRC="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/Widget.app"
-          # Extension is in IntermediateBuildFilesPath
           EXT="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/IntermediateBuildFilesPath/UninstalledProducts/iphoneos/BroadcastExtension.appex"
           
+          echo "APP: $APP_SRC"
+          echo "EXT: $EXT"
+          echo "APP exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
+          echo "EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
+          
           if [ ! -e "$APP_SRC" ] || [ ! -d "$EXT" ]; then
-            echo "APP exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
-            echo "EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
             echo "Error: App or Extension not found"
             exit 1
           fi
           
-          # Copy app (dereference symlink)
           rm -rf ./temp
           cp -rL "$APP_SRC" ./temp/Widget.app
-          
-          # Embed extension
           mkdir -p ./temp/Widget.app/PlugIns
           cp -r "$EXT" ./temp/Widget.app/PlugIns/
-          
-          # Create IPA
           mkdir -p Payload
           cp -r ./temp/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
