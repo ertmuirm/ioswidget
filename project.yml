@@ -32,7 +32,7 @@ targets:
         embed: true
 
   BroadcastExtension:
-    type: app-extension
+    type: widget-extension
     platform: iOS
     sources:
       - path: BroadcastExtension/Sources
@@ -46,6 +46,7 @@ targets:
         SWIFT_VERSION: "5.9"
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_IDENTITY: ""
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
     entitlements:
       path: BroadcastExtension/Sources/BroadcastExtension.entitlements
       properties:
