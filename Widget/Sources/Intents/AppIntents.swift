@@ -1,11 +1,5 @@
 import AppIntents
 
-struct MyAppIntents: AppIntentsProvider {
-    static var appIntents: [AppIntent] {
-        WidgetActionIntent()
-    }
-}
-
 // MARK: - Widget Configuration Intent
 
 struct OpenWidgetEditorIntent: AppIntent {
