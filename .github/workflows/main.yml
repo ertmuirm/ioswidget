@@ -55,13 +55,11 @@ jobs:
           cp -R "$APP_PATH/"* "Payload/Widget.app/"
           chmod +x Payload/Widget.app/Widget
           
-          # Create IPA
-          cd Payload
-          zip -r ../Widget.ipa .
-          cd ..
+          # Create IPA - zip from parent to include Payload/ prefix
+          zip -r Widget.ipa Payload
           
-          # Verify
-          unzip -l Widget.ipa | head -20
+          # Verify - should show "Payload/Widget.app/..."
+          unzip -l Widget.ipa | head -15
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
