@@ -24,19 +24,23 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # List all folders in DerivedData
-          echo "=== DerivedData contents ==="
-          ls /Users/runner/Library/Developer/Xcode/DerivedData/
-          
           DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -maxdepth 1 -type d -name "*Widget*" | head -1)
-          echo "Found DD_BASE: $DD_BASE"
+
+          # Try various paths
+          APP_SRC=""
+          for d in "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/Widget.app" "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app" "./build/Widget.xarchive.xcarchive/Products/Applications/Widget.app"; do
+            if [ -e "$d" ]; then
+              APP_SRC="$d"
+              echo "Found app at: $d"
+              break
+            fi
+          done
           
-          APP_SRC="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/Widget.app"
           EXT="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/IntermediateBuildFilesPath/UninstalledProducts/iphoneos/BroadcastExtension.appex"
           
-          if [ ! -e "$APP_SRC" ] || [ ! -d "$EXT" ]; then
-            echo "APP exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
-            echo "EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
+          if [ -z "$APP_SRC" ] || [ ! -d "$EXT" ]; then
+            echo "APP: $APP_SRC EXT: $EXT"
+            ls "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/" 2>/dev/null || echo "Widget folder missing"
             exit 1
           fi
           
