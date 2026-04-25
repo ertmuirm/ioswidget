@@ -20,21 +20,15 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          # Build with specific derivedDataPath so we know where products are
-          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" -derivedDataPath ./DerivedData
-
-      - name: Debug build outputs
-        run: |
-          echo "=== DerivedData Contents ==="
-          ls -la ./DerivedData/
-          echo "=== Products ==="
-          find ./DerivedData -name "*.app" -o -name "*.appex" | head -20
+          # Build for device with specific derivedDataPath
+          xcodebuild build -scheme Widget -configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" -derivedDataPath ./DerivedData
 
       - name: Package as IPA
         run: |
-          # Find app - it's in the shared BuildProductsPath (symlink)
-          APP=$(find ./DerivedData -name "Widget.app" -type d | grep -v ".dSYM" | head -1)
-          EXT=$(find ./DerivedData -name "BroadcastExtension.appex" -type d | head -1)
+          # Use find to locate app and extension
+          WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
+          APP=$(find "$WORK_DIR/DerivedData" -name "Widget.app" -type d 2>/dev/null | grep -v ".dSYM" | head -1)
+          EXT=$(find "$WORK_DIR/DerivedData" -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
           
           if [ -z "$APP" ] || [ -z "$EXT" ]; then
             echo "APP: $APP"
@@ -42,6 +36,9 @@ jobs:
             echo "Error: App or Extension not found"
             exit 1
           fi
+          
+          echo "Using APP: $APP"
+          echo "Using EXT: $EXT"
           
           # Copy and embed
           rm -rf ./temp
