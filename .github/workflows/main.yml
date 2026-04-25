@@ -25,34 +25,24 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # Use find to locate app and extension
+          # Paths to build products
           WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
           APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
           EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
           
-          echo "Using APP: $APP"
-          echo "Using EXT: $EXT"
-          
           # Verify files exist
-          if [ ! -d "$APP" ]; then
-            echo "Error: Widget.app not found at $APP"
-            exit 1
-          fi
-          if [ ! -d "$EXT" ]; then
-            echo "Error: BroadcastExtension.appex not found at $EXT"
+          if [ ! -d "$APP" ] || [ ! -d "$EXT" ]; then
+            echo "Error: Widget.app or BroadcastExtension.appex not found"
             exit 1
           fi
           
-          # Copy and embed using absolute paths
-          rm -rf ./temp
-          mkdir -p ./temp/Widget.app
+          # Copy app and embed extension
+          rm -rf ./temp ./Payload
+          mkdir -p ./temp/Widget.app/PlugIns ./Payload
           cp -a "$APP/"* ./temp/Widget.app/
-          mkdir -p ./temp/Widget.app/PlugIns
           cp -a "$EXT/"* ./temp/Widget.app/PlugIns/
-          
-          # Create IPA
-          mkdir -p Payload
           cp -a ./temp/Widget.app Payload/
+          
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
