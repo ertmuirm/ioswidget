@@ -11,6 +11,9 @@ targets:
     sources:
       - path: Widget/Sources
       - path: Widget/Resources
+      - path: BroadcastExtension/Sources
+        excludes:
+          - "**/Info.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror
@@ -22,6 +25,9 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "16.0"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
 
 schemes:
   Widget:
