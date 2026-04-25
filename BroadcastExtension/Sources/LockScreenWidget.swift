@@ -3,8 +3,8 @@ import SwiftUI
 
 struct LockScreenWidget: Widget {
     let kind: String = "LockScreenWidget"
-    
-    var body: WidgetConfiguration {
+
+    var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: LockScreenProvider()) { entry in
             LockScreenWidgetEntryView(entry: entry)
         }
@@ -17,12 +17,11 @@ struct LockScreenProvider: TimelineProvider {
     func placeholder(in context: Context) -> LockScreenEntry {
         LockScreenEntry(date: Date(), items: [])
     }
-    
+
     func getSnapshot(in context: Context, completion: @escaping (LockScreenEntry) -> Void) {
-        let entry = LockScreenEntry(date: Date(), items: [])
-        completion(entry)
+        completion(LockScreenEntry(date: Date(), items: []))
     }
-    
+
     func getTimeline(in context: Context, completion: @escaping (Timeline<LockScreenEntry>) -> Void) {
         let entry = LockScreenEntry(date: Date(), items: [])
         let timeline = Timeline(entries: [entry], policy: .atEnd)
@@ -41,17 +40,16 @@ struct LockScreenWidgetEntryView: View {
     var body: some View {
         ZStack {
             Color.black
-            
             if entry.items.isEmpty {
                 Image(systemName: "star.fill")
-                    .font(.largeTitle)
+                    .font(.title2)
             } else if let item = entry.items.first {
                 if item.displayType == .icon {
                     Image(systemName: item.sfSymbolName)
-                        .font(.title2)
+                        .font(.title3)
                 } else {
                     Text(item.customText)
-                        .font(.caption)
+                        .font(.caption2)
                 }
             }
         }
