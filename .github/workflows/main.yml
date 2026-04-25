@@ -27,28 +27,32 @@ jobs:
         run: |
           # Use find to locate app and extension
           WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
-          APP=$(find "$WORK_DIR/DerivedData" -name "Widget.app" -type d 2>/dev/null | grep -v ".dSYM" | head -1)
-          EXT=$(find "$WORK_DIR/DerivedData" -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
-          
-          if [ -z "$APP" ] || [ -z "$EXT" ]; then
-            echo "APP: $APP"
-            echo "EXT: $EXT"
-            echo "Error: App or Extension not found"
-            exit 1
-          fi
+          APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
+          EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
           
           echo "Using APP: $APP"
           echo "Using EXT: $EXT"
           
-          # Copy and embed
+          # Verify files exist
+          if [ ! -d "$APP" ]; then
+            echo "Error: Widget.app not found at $APP"
+            exit 1
+          fi
+          if [ ! -d "$EXT" ]; then
+            echo "Error: BroadcastExtension.appex not found at $EXT"
+            exit 1
+          fi
+          
+          # Copy and embed using absolute paths
           rm -rf ./temp
-          cp -rL "$APP" ./temp/Widget.app
+          mkdir -p ./temp/Widget.app
+          cp -a "$APP/"* ./temp/Widget.app/
           mkdir -p ./temp/Widget.app/PlugIns
-          cp -r "$EXT" ./temp/Widget.app/PlugIns/
+          cp -a "$EXT/"* ./temp/Widget.app/PlugIns/
           
           # Create IPA
           mkdir -p Payload
-          cp -r ./temp/Widget.app Payload/
+          cp -a ./temp/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
