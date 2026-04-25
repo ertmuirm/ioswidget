@@ -22,10 +22,29 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
+      - name: Debug - find app location
+        run: |
+          echo "=== Checking build folder ==="
+          ls -la ./build/
+          ls -la ./build/Widget.xarchive/ 2>/dev/null || echo "Archive folder missing"
+          echo "=== Checking DerivedData ==="
+          find ./DerivedData -name "Widget.app" -type d 2>/dev/null | head -5
+
       - name: Package as IPA
         run: |
+          # Find app in archive
+          APP_PATH=$(find ./build -name "Widget.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | head -1)
+          fi
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Widget.app not found"
+            exit 1
+          fi
+          
           mkdir -p Payload
-          cp -r ./build/Widget.xarchive/Products/Applications/Widget.app Payload/
+          cp -r "$APP_PATH" Payload/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
