@@ -20,7 +20,7 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
+          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
       - name: Package as IPA
         run: |
