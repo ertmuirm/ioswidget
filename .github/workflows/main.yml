@@ -61,15 +61,11 @@ jobs:
           # Fix permissions
           chmod +x Payload/Widget.app/Widget
           
-          # Create IPA via zip
-          cd Payload
-          zip -y -r ../Widget.ipa .
-          cd ..
+          # Create IPA - zip from parent dir to include Payload prefix
+          zip -y -r Widget.ipa Payload
           
           # Verify contents
           unzip -l Widget.ipa | head -15
-          echo "---"
-          unzip -l Widget.ipa | grep -E "\.app|Payload"
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
