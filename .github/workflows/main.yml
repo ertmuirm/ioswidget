@@ -22,10 +22,32 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
+      - name: Find Extension
+        run: |
+          find ./build -name "BroadcastExtension.appex" -type d
+
       - name: Package as IPA
         run: |
+          # Find app and extension
+          APP_SRC=$(find ./build -name "Widget.app" -type d | head -1)
+          EXT=$(find ./build -name "BroadcastExtension.appex" -type d | head -1)
+          
+          if [ -z "$APP_SRC" ] || [ -z "$EXT" ]; then
+            echo "Error: Widget.app or BroadcastExtension.appex not found"
+            exit 1
+          fi
+          
+          # Copy app to temp location for modification
+          rm -rf ./temp
+          cp -r "$APP_SRC" ./temp/Widget.app
+          
+          # Embed extension
+          mkdir -p ./temp/Widget.app/PlugIns
+          cp -r "$EXT" ./temp/Widget.app/PlugIns/
+          
+          # Create IPA
           mkdir -p Payload
-          cp -r ./build/Widget.xarchive.xcarchive/Products/Applications/Widget.app Payload/
+          cp -r ./temp/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
