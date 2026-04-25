@@ -22,32 +22,9 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "16.0"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
-    dependencies:
-      - target: BroadcastExtension
-        embed: true
-
-  BroadcastExtension:
-    type: app-extension
-    platform: iOS
-    sources:
-      - path: BroadcastExtension/Sources
-        excludes:
-          - "**/Info.plist"
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror.broadcast
-        INFOPLIST_FILE: BroadcastExtension/Sources/Info.plist
-        SKIP_INSTALL: YES
-        SWIFT_VERSION: "5.9"
-        GENERATE_INFOPLIST_FILE: YES
-        CODE_SIGN_IDENTITY: ""
-        IPHONEOS_DEPLOYMENT_TARGET: "16.0"
-    dependencies:
-      - sdk: WidgetKit.framework
 
 schemes:
   Widget:
     build:
       targets:
         Widget: all
-        BroadcastExtension: all
