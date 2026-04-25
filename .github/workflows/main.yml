@@ -25,7 +25,6 @@ jobs:
       - name: Package as IPA
         run: |
           mkdir -p Payload
-          # Note: xcodebuild creates .xcarchive extension automatically
           cp -r ./build/Widget.xarchive.xcarchive/Products/Applications/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
