@@ -1,8 +1,7 @@
 name: Build Widget App
 
 on:
-  push:
-    branches: [widget-app-v1]
+  workflow_dispatch:
 
 jobs:
   build:
