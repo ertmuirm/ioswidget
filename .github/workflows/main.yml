@@ -20,51 +20,14 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
-
-      - name: Embed Extension Manually
-        run: |
-          # Find the built app in our DerivedData
-          APP_PATH=$(find ./DerivedData -path "*/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app" -type d | head -1)
-          EXTENSION_PATH=$(find ./DerivedData -path "*/UninstalledProducts/iphoneos/BroadcastExtension.appex" -type d | head -1)
-          
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: Widget.app not found in DerivedData"
-            find ./DerivedData -name "Widget.app" -type d 2>/dev/null | head -5
-            exit 1
-          fi
-          
-          echo "Using APP_PATH: $APP_PATH"
-          echo "Using EXTENSION_PATH: $EXTENSION_PATH"
-          
-          # Create PlugIns folder if extension exists
-          if [ -n "$EXTENSION_PATH" ] && [ -d "$EXTENSION_PATH" ]; then
-            mkdir -p "$APP_PATH/PlugIns"
-            cp -R "$EXTENSION_PATH" "$APP_PATH/PlugIns/"
-            echo "Extension embedded"
-          else
-            echo "Warning: Extension not found"
-          fi
-          
-          ls -la "$APP_PATH/"
+          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
       - name: Package as IPA
         run: |
-          APP_PATH=$(find ./DerivedData -path "*/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app" -type d | head -1)
-          
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: Widget.app not found"
-            exit 1
-          fi
-          
-          rm -rf Payload Widget.ipa
-          mkdir -p Payload/Widget.app
-          cp -a "$APP_PATH/." Payload/Widget.app/
+          mkdir -p Payload
+          cp -r ./build/Widget.xarchive/Products/Applications/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
-          
-          zip -y -r Widget.ipa Payload
-          
-          unzip -l Widget.ipa | head -15
+          zip -r Widget.ipa Payload
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
