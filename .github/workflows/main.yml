@@ -28,15 +28,16 @@ jobs:
           WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
           APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
           EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
-          
+
+                - name: Package as IPA
+        run: |
           rm -rf Payload
+          mkdir -p Payload
+          cp -a "$APP/." Payload/          
           mkdir -p Payload/Widget.app/PlugIns
-          
-          cp -a "$APP/." Payload/Widget.app/
           cp -a "$EXT/." Payload/Widget.app/PlugIns/
-          
           chmod +x Payload/Widget.app/Widget
-          cd Payload && zip -r ../Widget.ipa . && cd ..
+          zip -r Widget.ipa Payload
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
