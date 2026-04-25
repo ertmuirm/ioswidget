@@ -22,18 +22,26 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Find Extension
+      - name: Debug - Find all apps
         run: |
-          find ./build -name "BroadcastExtension.appex" -type d
+          find . -name "*.app" -type d 2>/dev/null
+          find /Users/runner/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null
 
       - name: Package as IPA
         run: |
-          # Find app and extension
-          APP_SRC=$(find ./build -name "Widget.app" -type d | head -1)
-          EXT=$(find ./build -name "BroadcastExtension.appex" -type d | head -1)
+          # Look in global DerivedData since local archive may not have extension
+          WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
+          APP_SRC=$(find "$WORK_DIR" -name "Widget.app" -path "*/Applications/*" -type d 2>/dev/null | head -1)
+          if [ -z "$APP_SRC" ]; then
+            # Try DerivedData
+            APP_SRC=$(find ~/Library/Developer/Xcode/DerivedData -name "Widget.app" -path "*/Applications/*" -type d 2>/dev/null | head -1)
+          fi
           
-          if [ -z "$APP_SRC" ] || [ -z "$EXT" ]; then
+          EXT=$(find ~/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
+          if [ -z "$EXT" ] || [ -z "$APP_SRC" ]; then
+            echo "APP: $APP_SRC EXT: $EXT"
             echo "Error: Widget.app or BroadcastExtension.appex not found"
+            ls -la ~/Library/Developer/Xcode/DerivedData/ 2>/dev/null || echo "No DerivedData"
             exit 1
           fi
           
