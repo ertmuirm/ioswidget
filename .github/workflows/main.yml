@@ -24,53 +24,32 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # First check local archive (xcodebuild archive creates this structure)
-          ARCHIVE="./build/Widget.xarchive.xcarchive"
-          APP_SRC=""
+          # App in local archive
+          APP_SRC="./build/Widget.xarchive.xcarchive/Products/Applications/Widget.app"
+          
           EXT=""
-          
-          for d in "$ARCHIVE/Products/Applications/Widget.app" "$ARCHIVE/Products/Applications/Widget.app"; do
-            if [ -e "$d" ]; then
-              APP_SRC="$d"
-              echo "Found app at: $d"
-              break
-            fi
-          done
-          
-          # Also try finding extension in local archive
-          for e in "$ARCHIVE/Products/Applications/BroadcastExtension.appex" "./build/Widget.xarchive.xcarchive/Products/Applications/BroadcastExtension.appex"; do
+          # First check if extension is in the archive products folder next to app
+          for e in "./build/Widget.xarchive.xcarchive/Products/Applications/BroadcastExtension.appex" "./build/Widget.xarchive.xcarchive/Products/BroadcastExtension.appex"; do
             if [ -e "$e" ]; then
               EXT="$e"
-              echo "Found ext at: $e"
+              echo "Found ext locally: $e"
               break
             fi
           done
           
-          # If not found locally, try DerivedData
-          if [ -z "$APP_SRC" ]; then
-            DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -maxdepth 1 -type d -name "*Widget*" | head -1)
-            for d in "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/Widget.app" "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app"; do
-              if [ -e "$d" ]; then
-                APP_SRC="$d"
-                echo "Found app at: $d"
-                break
-              fi
-            done
-            EXT="$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/IntermediateBuildFilesPath/UninstalledProducts/iphoneos/BroadcastExtension.appex"
+          # If not found, search in global DerivedData
+          if [ -z "$EXT" ]; then
+            EXT=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
+            echo "Found ext in DerivedData: $EXT"
           fi
           
-          if [ -z "$APP_SRC" ] || [ ! -d "$EXT" ]; then
-            echo "APP src: $APP_SRC"
-            echo "EXT src: $EXT"
-            echo "APP found: $([ -n "$APP_SRC" ] && echo yes || echo no)"
-            echo "EXT found: $([ -d "$EXT" ] && echo yes || echo no)"
-            echo "Error: Not found"
-            ls ./build/Widget.xarchive.xcarchive/Products/Applications/ 2>/dev/null || echo "No local Products"
+          if [ ! -e "$APP_SRC" ] || [ -z "$EXT" ] || [ ! -d "$EXT" ]; then
+            echo "APP: $APP_SRC exists: $([ -e "$APP_SRC" ] && echo yes || echo no)"
+            echo "EXT: $EXT found: $([ -n "$EXT" ] && echo yes || echo no)"
+            echo "Error: App or Extension not found"
+            ls ./build/Widget.xarchive.xcarchive/Products/Applications/
             exit 1
           fi
-          
-          echo "Using APP: $APP_SRC"
-          echo "Using EXT: $EXT"
           
           rm -rf ./temp
           cp -rL "$APP_SRC" ./temp/Widget.app
