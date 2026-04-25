@@ -22,22 +22,11 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Debug archive
-        run: |
-          echo "=== Build folder ==="
-          ls -la ./build/
-          ls -la ./build/Widget.xarchive/
-          find ./build -name "*.app" -type d 2>/dev/null | head -5
-
       - name: Package as IPA
         run: |
           mkdir -p Payload
-          APP_PATH=$(find ./build -name "Widget.app" -type d | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: Widget.app not found"
-            exit 1
-          fi
-          cp -r "$APP_PATH" Payload/
+          # Note: xcodebuild creates .xcarchive extension automatically
+          cp -r ./build/Widget.xarchive.xcarchive/Products/Applications/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
