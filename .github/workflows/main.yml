@@ -24,8 +24,8 @@ jobs:
 
       - name: Package as IPA
         run: |
-          # Find DerivedData folder by pattern
-          DD_BASE=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Widget-*" -maxdepth 1 | head -1)
+          # Use absolute path
+          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -type d -name "Widget-*" -maxdepth 1 | head -1)
           if [ -z "$DD_BASE" ]; then
             echo "Error: DerivedData folder not found"
             exit 1
@@ -39,8 +39,12 @@ jobs:
           if [ ! -d "$APP_SRC" ] || [ ! -d "$EXT" ]; then
             echo "APP: $APP_SRC exists: $([ -d "$APP_SRC" ] && echo yes || echo no)"
             echo "EXT: $EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
+            # Try listing possible locations
+            echo "Checking BuildProductsPath/Release-iphoneos:"
+            ls "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/BuildProductsPath/Release-iphoneos/" 2>/dev/null || echo "No Release-iphoneos"
+            echo "Checking InstallationBuildProductsLocation:"
+            ls "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/" 2>/dev/null || echo "No Applications"
             echo "Error: App or Extension not found"
-            ls -la "$DD_BASE/Build/Intermediates.noindex/ArchiveIntermediates/Widget/" 2>/dev/null || echo "No Widget folder"
             exit 1
           fi
           
