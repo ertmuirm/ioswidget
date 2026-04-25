@@ -28,8 +28,6 @@ jobs:
           APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
           EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
 
-                - name: Package as IPA
-        run: |
           rm -rf Payload
           mkdir -p Payload
           cp -a "$APP/." Payload/          
