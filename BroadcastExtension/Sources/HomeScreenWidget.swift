@@ -3,8 +3,8 @@ import SwiftUI
 
 struct HomeScreenWidget: Widget {
     let kind: String = "HomeWidget"
-    
-    var body: WidgetConfiguration {
+
+    var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HomeScreenProvider()) { entry in
             HomeScreenWidgetEntryView(entry: entry)
         }
@@ -17,12 +17,11 @@ struct HomeScreenProvider: TimelineProvider {
     func placeholder(in context: Context) -> HomeScreenEntry {
         HomeScreenEntry(date: Date(), items: [])
     }
-    
+
     func getSnapshot(in context: Context, completion: @escaping (HomeScreenEntry) -> Void) {
-        let entry = HomeScreenEntry(date: Date(), items: [])
-        completion(entry)
+        completion(HomeScreenEntry(date: Date(), items: []))
     }
-    
+
     func getTimeline(in context: Context, completion: @escaping (Timeline<HomeScreenEntry>) -> Void) {
         let entry = HomeScreenEntry(date: Date(), items: [])
         let timeline = Timeline(entries: [entry], policy: .atEnd)
@@ -41,30 +40,25 @@ struct HomeScreenWidgetEntryView: View {
     var body: some View {
         ZStack {
             Color.black
-
             if entry.items.isEmpty {
-                VStack {
+                VStack(spacing: 4) {
                     Image(systemName: "star.fill")
                         .font(.largeTitle)
                     Text("Widget")
-                        .font(.caption)
+                        .font(.caption2)
                 }
                 .foregroundColor(.white)
             } else if let item = entry.items.first {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-
+                VStack {
                     if item.displayType == .icon {
                         Image(systemName: item.sfSymbolName)
-                            .font(.title)
-                            .foregroundColor(.white)
+                            .font(.title2)
                     } else {
                         Text(item.customText)
-                            .font(.caption)
-                            .foregroundColor(.white)
+                            .font(.caption2)
                     }
                 }
+                .foregroundColor(.white)
             }
         }
     }

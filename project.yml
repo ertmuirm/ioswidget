@@ -36,12 +36,16 @@ targets:
     platform: iOS
     sources:
       - path: BroadcastExtension/Sources
+        excludes:
+          - "**/Info.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror.broadcast
         INFOPLIST_FILE: BroadcastExtension/Sources/Info.plist
         SKIP_INSTALL: YES
         SWIFT_VERSION: "5.9"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: ""
     entitlements:
       path: BroadcastExtension/Sources/BroadcastExtension.entitlements
       properties:
