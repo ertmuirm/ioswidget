@@ -11,9 +11,6 @@ targets:
     sources:
       - path: Widget/Sources
       - path: Widget/Resources
-      - path: BroadcastExtension/Sources
-        excludes:
-          - "**/Info.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror
@@ -26,6 +23,22 @@ targets:
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
     dependencies:
+      - target: BroadcastExtension
+        embed: true
+
+  BroadcastExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: BroadcastExtension/Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror.broadcast
+        INFOPLIST_FILE: BroadcastExtension/Sources/Info.plist
+        SKIP_INSTALL: YES
+        SWIFT_VERSION: "5.9"
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
 
@@ -34,3 +47,4 @@ schemes:
     build:
       targets:
         Widget: all
+        BroadcastExtension: all
