@@ -37,7 +37,6 @@ targets:
         INFOPLIST_FILE: BroadcastExtension/Sources/Info.plist
         SKIP_INSTALL: YES
         SWIFT_VERSION: "5.9"
-        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
