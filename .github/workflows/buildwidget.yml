@@ -1,7 +1,8 @@
-name: Build Widget new
+name: Build Widget App
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [widget-app-v1]
 
 jobs:
   build:
@@ -19,33 +20,27 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO \
- 
-      - name: Embed Extension Manually
-        run: |
-          EXTENSION_PATH="./DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
-          APP_PATH="./build/Widget.xarchive/Products/Applications/Widget.app"
-          
-          # Create PlugIns folder if needed
-          mkdir -p "$APP_PATH/PlugIns"
-          
-          # Copy extension
-          cp -R "$EXTENSION_PATH" "$APP_PATH/PlugIns/"
-          
-          # Verify
-          ls -la "$APP_PATH/PlugIns/"
+          # Build for device with specific derivedDataPath
+          xcodebuild build -scheme Widget -configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" -derivedDataPath ./DerivedData
 
       - name: Package as IPA
         run: |
+          WORK_DIR="/Users/runner/work/ioswidget/ioswidget"
+          APP="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/Widget.app"
+          EXT="$WORK_DIR/DerivedData/Build/Products/Release-iphoneos/BroadcastExtension.appex"
+
+                - name: Package as IPA
+        run: |
+          rm -rf Payload
           mkdir -p Payload
-          cp -r ./build/Widget.xarchive/Products/Applications/Widget.app Payload/
+          cp -a "$APP/." Payload/          
+          mkdir -p Payload/Widget.app/PlugIns
+          cp -a "$EXT/." Payload/Widget.app/PlugIns/
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
-                 
-          # Verify contents
-          unzip -l Widget.ipa | head -15
+
       - name: Upload unsigned IPA
-      uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: Widget
           path: Widget.ipa
