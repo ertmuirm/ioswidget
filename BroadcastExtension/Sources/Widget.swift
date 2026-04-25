@@ -1,15 +1,15 @@
 import WidgetKit
 import SwiftUI
 
-struct LockScreenWidget: Widget {
-    let kind: String = "LockScreenWidget"
+struct HomeWidget: Widget {
+    let kind: String = "HomeWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             WidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Lock Screen")
-        .description("Lock Screen Widget")
+        .configurationDisplayName("Widget")
+        .description("Home Screen Widget")
     }
 
     struct Provider: TimelineProvider {
@@ -38,9 +38,21 @@ struct LockScreenWidget: Widget {
         var body: some View {
             ZStack {
                 Color.black
-                Image(systemName: "star.fill")
-                    .font(.title2)
+                VStack(spacing: 4) {
+                    Image(systemName: "star.fill")
+                        .font(.largeTitle)
+                    Text("Widget")
+                        .font(.caption2)
+                }
+                .foregroundColor(.white)
             }
         }
+    }
+}
+
+@main
+struct HomeWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        HomeWidget()
     }
 }
