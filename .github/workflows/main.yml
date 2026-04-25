@@ -45,21 +45,52 @@ jobs:
           # Verify
           ls -la "$APP_PATH/PlugIns/"
 
-      - name: Package as IPA
+      - name: Create xcarchive
         run: |
           APP_PATH="./DerivedData/Build/Products/Release-iphoneos/Widget.app"
           
-          # Create proper IPA structure: Payload/Widget.app/
-          rm -rf Payload
-          mkdir -p Payload/Widget.app
-          cp -R "$APP_PATH/"* "Payload/Widget.app/"
-          chmod +x Payload/Widget.app/Widget
+          # Create archive structure
+          rm -rf Widget.xcarchive
+          mkdir -p Widget.xcarchive/Products/Applications/Widget.app
+          cp -R "$APP_PATH"/* "Widget.xcarchive/Products/Applications/Widget.app/"
           
-          # Create IPA - zip from parent to include Payload/ prefix
-          zip -r Widget.ipa Payload
+          # Add Info.plist to archive
+          cp Widget/Resources/Info.plist "Widget.xcarchive/Info.plist"
           
-          # Verify - should show "Payload/Widget.app/..."
-          unzip -l Widget.ipa | head -15
+          # Verify
+          ls -la Widget.xcarchive/Products/Applications/Widget.app/
+          ls -la Widget.xcarchive/
+
+      - name: Create ExportOptions.plist
+        run: |
+          cat > ExportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>none</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>signingCertificate</key>
+              <string></string>
+          </dict>
+          </plist>
+          EOF
+          cat ExportOptions.plist
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath Widget.xcarchive \
+            -exportPath . \
+            -exportOptionsPlist ExportOptions.plist \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Verify IPA
+        run: |
+          ls -la
+          unzip -l Widget.ipa | head -20
 
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
