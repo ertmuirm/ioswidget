@@ -33,7 +33,7 @@ targets:
       - path: BroadcastExtension/Sources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror.broadcast
+        PRODUCT_BUNDLE_IDENTIFIER: com.iosmirror.widget
         INFOPLIST_FILE: BroadcastExtension/Sources/Info.plist
         SKIP_INSTALL: YES
         SWIFT_VERSION: "5.9"
