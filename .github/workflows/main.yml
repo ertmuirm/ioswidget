@@ -20,36 +20,36 @@ jobs:
 
       - name: Build (unsigned)
         run: |
-          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
+          # Build with specific derivedDataPath so we know where products are
+          xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" -derivedDataPath ./DerivedData
 
-      - name: Debug archive
+      - name: Debug build outputs
         run: |
-          ls -la ./build/
-          ls -la ./build/Widget.xarchive.xcarchive/
-          ls -la ./build/Widget.xarchive.xcarchive/Products/
-          ls -la ./build/Widget.xarchive.xcarchive/Products/Applications/
+          echo "=== DerivedData Contents ==="
+          ls -la ./DerivedData/
+          echo "=== Products ==="
+          find ./DerivedData -name "*.app" -o -name "*.appex" | head -20
 
       - name: Package as IPA
         run: |
-          DD_BASE=$(find /Users/runner/Library/Developer/Xcode/DerivedData -maxdepth 1 -type d -name "*Widget*" | head -1)
+          # Find app - it's in the shared BuildProductsPath (symlink)
+          APP=$(find ./DerivedData -name "Widget.app" -type d | grep -v ".dSYM" | head -1)
+          EXT=$(find ./DerivedData -name "BroadcastExtension.appex" -type d | head -1)
           
-          # Use absolute path to app in local archive
-          APP_SRC="/Users/runner/work/ioswidget/ioswidget/build/Widget.xarchive.xcarchive/Products/Applications/Widget.app"
-          
-          # Find extension in DerivedData
-          EXT=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "BroadcastExtension.appex" -type d 2>/dev/null | head -1)
-          
-          if [ ! -d "$APP_SRC" ] || [ -z "$EXT" ]; then
-            echo "Error - APP: $APP_SRC exists: $([ -d "$APP_SRC" ] && echo yes || echo no)"
-            echo "Error - EXT: $EXT exists: $([ -d "$EXT" ] && echo yes || echo no)"
-            ls -la ./build/Widget.xarchive.xcarchive/Products/Applications/
+          if [ -z "$APP" ] || [ -z "$EXT" ]; then
+            echo "APP: $APP"
+            echo "EXT: $EXT"
+            echo "Error: App or Extension not found"
             exit 1
           fi
           
+          # Copy and embed
           rm -rf ./temp
-          cp -rL "$APP_SRC" ./temp/Widget.app
+          cp -rL "$APP" ./temp/Widget.app
           mkdir -p ./temp/Widget.app/PlugIns
           cp -r "$EXT" ./temp/Widget.app/PlugIns/
+          
+          # Create IPA
           mkdir -p Payload
           cp -r ./temp/Widget.app Payload/
           chmod +x Payload/Widget.app/Widget
