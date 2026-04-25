@@ -22,22 +22,28 @@ jobs:
         run: |
           xcodebuild archive -scheme Widget -configuration Release -archivePath ./build/Widget.xarchive -derivedDataPath ./DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Find and Export app
+      - name: Debug DerivedData
         run: |
-          # Find the app in DerivedData and copy to archive location
-          APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | grep -v dSYM | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: Widget.app not found"
-            exit 1
-          fi
-          echo "Found app at: $APP_PATH"
-          mkdir -p ./build/Widget.xarchive/Products/Applications
-          cp -r "$APP_PATH" ./build/Widget.xarchive/Products/Applications/
+          echo "=== Contents of DerivedData ==="
+          find ./DerivedData -type d -name "*.app" 2>/dev/null | head -20
+          echo "=== Top level ==="
+          ls -la ./DerivedData/ 2>/dev/null || echo "No DerivedData folder"
+          ls -la ./DerivedData/Build/ 2>/dev/null || echo "No Build folder"
 
       - name: Package as IPA
         run: |
           mkdir -p Payload
-          cp -r ./build/Widget.xarchive/Products/Applications/Widget.app Payload/
+          # Direct path based on actual build location
+          cp -r ./DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/Widget/InstallationBuildProductsLocation/Applications/Widget.app Payload/ 2>/dev/null || {
+            # Fallback to finding it
+            APP_PATH=$(find ./DerivedData -name "Widget.app" -type d | head -1)
+            if [ -n "$APP_PATH" ]; then
+              cp -r "$APP_PATH" Payload/
+            else
+              echo "Error: Widget.app not found"
+              exit 1
+            fi
+          }
           chmod +x Payload/Widget.app/Widget
           zip -r Widget.ipa Payload
 
